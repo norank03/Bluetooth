@@ -1,81 +1,144 @@
+
+
 // ignore_for_file: non_constant_identifier_names
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/control_button.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-void main() async {
-  runApp(const MyApp());
+
+/*-------------------  class for th webview that will appear if you pressed button-------------------------*/
+
+class YourWebView extends StatelessWidget {
+  String url;
+  YourWebView(this.url);
+
+  final Completer<WebViewController> _controller =
+      Completer<WebViewController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter WebView example'),
+        ),
+        body: Builder(builder: (BuildContext context) {
+          return WebView(
+            initialUrl: url,
+            javascriptMode: JavascriptMode.unrestricted,
+            onWebViewCreated: (WebViewController webViewController) {
+              _controller.complete(webViewController);
+            },
+            navigationDelegate: (NavigationRequest request) {
+              if (request.url.startsWith('https://www.youtube.com/')) {
+                print('blocking navigation to $request}');
+                return NavigationDecision.prevent;
+              }
+              print('allowing navigation to $request');
+              return NavigationDecision.navigate;
+            },
+            onPageStarted: (String url) {
+              print('Page started loading: $url');
+            },
+            onPageFinished: (String url) {
+              print('Page finished loading: $url');
+            },
+            gestureNavigationEnabled: true,
+          );
+        }));
+  }
+}
+/*---------------Class End-----------------------------------------------*/
+
+void main() {
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  
-const MyApp({ super.key});
-@override
+  @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
-     
-         title: 'Flutter Demo',
-         theme: ThemeData (
-          
-              primarySwatch: Colors.blue ,
-
-           ), 
-
-       // ignore: sort_child_properties_last
-       home: const MyHomePage (title: 'Flutter Demo Home Page')
-                
-                 
-         );
-
-
-        
-   
-          
-
-
-}
-
- 
-}
-class MyHomePage extends StatefulWidget
-{
-const MyHomePage({super.key, required this.title});
-final String title;
-@override
-State<MyHomePage> createState() => _MyHomePageState();
-
-}
-
-class _MyHomePageState extends State<MyHomePage>
-{
-
- late final WebViewController controller;
- @override
-  void initState() {
-    super.initState();
-    controller = WebViewController()
-      ..loadRequest(
-        Uri.parse('https://flutter.dev'),
-      );
-  }
-@override
-Widget build(BuildContext context)
-{
-  return Scaffold(
-    appBar: AppBar(
-      title: Text(widget.title),
-    ),
-       body: WebViewWidget(
-        controller: controller,
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      
-  );
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+/* Home Page classs THAT   CALL CONTAIN BOTH BUTTON FUNCTIONS INFORM FOR WEBFORM  INFORM2 FOR BLUETOOTH PAGE*/
+class MyHomePage extends StatefulWidget {
+ const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
 
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  inform() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => YourWebView('https://flutter.dev')));
+  }
+
+  inform2()
+  {
+     Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MainScreen()));
+  }
+/*APP   WIDGET WILL APPEAR IN IT TWOOO BUTTONS*/
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              RaisedButton(
+                onPressed: inform,
+                child: const Text('Webview'),
+              ),
+              RaisedButton(
+                onPressed:inform2,
+                child: const Text('Bluetooth Devices'),
+              ),
+              
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 }
+/*----------------------CLASS ENDS--------------------- */
+
+/*---------------RESPONSIPLE FOR BLUETHOOTH FUNCTION AND LISTING--------------------------------*/
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
